@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market // Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0a0a0c;
+      --surface: #121216;
+      --surface-border: #23222b;
+      --crimson: #e11d48;
+      --crimson-hover: #be123c;
+      --pink-neon: #f43f5e;
+      --pink-glow: #fb7185;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(225, 29, 72, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.08) 0%, transparent 45%);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Верхний декоративный заголовок */
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: rgba(225, 29, 72, 0.18);
+      color: var(--pink-glow);
+      padding: 2px 8px;
+      border: 1px solid var(--crimson);
+      border-radius: 4px;
+    }
+
+    /* Форма */
+    .form-panel {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 28px;
+      position: sticky;
+      top: 30px;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
+    .form-panel h2 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+      color: #fff;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--pink-glow);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      background: #08080a;
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--pink-neon);
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.25);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    /* Кастомная кнопка выбора файла */
+    .file-dropzone {
+      border: 1px dashed var(--surface-border);
+      background: #08080a;
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: 0.2s;
+    }
+
+    .file-dropzone:hover {
+      border-color: var(--crimson);
+      background: rgba(225, 29, 72, 0.03);
+    }
+
+    .file-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .file-dropzone-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .preview-container {
+      margin-top: 10px;
+      display: none;
+      max-height: 140px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--surface-border);
+    }
+
+    .preview-container img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Кнопка отправки */
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--crimson) 0%, var(--pink-neon) 100%);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(225, 29, 72, 0.35);
+      transition: all 0.2s ease;
+      margin-top: 6px;
+    }
+
+    .btn-submit:hover {
+      box-shadow: 0 4px 25px rgba(244, 63, 94, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-msg {
+      margin-top: 12px;
+      font-size: 12px;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    /* Каталог карточек */
+    .catalog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 12px;
+    }
+
+    .catalog-header h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .items-count {
+      font-size: 12px;
+      color: var(--pink-glow);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .ad-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .ad-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(244, 63, 94, 0.5);
+      box-shadow: 0 8px 24px -10px rgba(244, 63, 94, 0.25);
+    }
+
+    .ad-img-box {
+      width: 100%;
+      height: 190px;
+      background: #09090b;
+      position: relative;
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ad-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .no-image {
+      font-size: 11px;
+      color: #4b5563;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .ad-content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .ad-badge {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 17px;
+      color: var(--pink-glow);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .ad-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .ad-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      flex-grow: 1;
+      word-break: break-word;
+    }
+
+    .card-footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Левая панель: Создание -->
+    <aside class="form-panel">
+      <div class="brand-title">
+        Market <span class="brand-tag">v1.0</span>
+      </div>
+      <h2>// Создать лот</h2>
+
+      <form id="createAdForm">
+        <div class="form-group">
+          <label for="title">Название</label>
+          <input type="text" id="title" placeholder="Cyberpunk 2077 GPU..." required>
+        </div>
+
+        <div class="form-group">
+          <label for="price">Цена</label>
+          <input type="number" id="price" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Описание</label>
+          <textarea id="description" placeholder="Состояние, характеристики..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Изображение</label>
+          <div class="file-dropzone">
+            <input type="file" id="image" accept="image/*">
+            <span class="file-dropzone-text" id="fileText">+ Выбрать файл</span>
+          </div>
+          <div class="preview-container" id="previewContainer">
+            <img id="imagePreview" alt="Превью">
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit">Опубликовать</button>
+        <div id="statusMsg" class="status-msg"></div>
+      </form>
+    </aside>
+
+    <!-- Правая панель: Каталог -->
+    <main>
+      <div class="catalog-header">
+        <h1>Каталог</h1>
+        <span class="items-count" id="itemsCount">Всего: 0</span>
+      </div>
+
+      <div id="cardsList" class="cards-grid">
+        <p style="color: var(--text-muted); font-size: 13px;">Загрузка объявлений...</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = 'https://inai-col1.fishrungames.com';
+    const ADS_URL = `${API_BASE}/ads`;
+
+    const cardsList = document.getElementById('cardsList');
+    const itemsCount = document.getElementById('itemsCount');
+    const form = document.getElementById('createAdForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const imageInput = document.getElementById('image');
+    const fileText = document.getElementById('fileText');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+
+    // Предпросмотр выбранного файла
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        fileText.textContent = file.name;
+        imagePreview.src = URL.createObjectURL(file);
+        previewContainer.style.display = 'block';
+      } else {
+        fileText.textContent = '+ Выбрать файл';
+        previewContainer.style.display = 'none';
+      }
+    });
+
+    // Получение объявлений (GET)
+    async function loadAds() {
+      try {
+        const response = await fetch(ADS_URL);
+        if (!response.ok) throw new Error(`Status ${response.status}`);
+
+        const data = await response.json();
+        const items = data.items || [];
+        itemsCount.textContent = `Всего: ${data.total ?? items.length}`;
+        renderAds(items);
+      } catch (err) {
+        cardsList.innerHTML = `<p style="color: var(--crimson);">Ошибка загрузки: ${err.message}</p>`;
+      }
+    }
+
+    function renderAds(items) {
+      if (items.length === 0) {
+        cardsList.innerHTML = '<p style="color: var(--text-muted);">Объявлений нет.</p>';
+        return;
+      }
+
+      cardsList.innerHTML = items.map(item => {
+        const imageUrl = item.image_url 
+          ? (item.image_url.startsWith('http') ? item.image_url : `${API_BASE}${item.image_url}`)
+          : null;
+
+        const media = imageUrl 
+          ? `<img class="ad-img" src="${imageUrl}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.outerHTML='<span class=\\'no-image\\'>[ошибка фото]</span>'">`
+          : `<span class="no-image">[нет медиа]</span>`;
+
+        return `
+          <article class="ad-card">
+            <div class="ad-img-box">${media}</div>
+            <div class="ad-content">
+              <span class="ad-badge">${Number(item.price).toLocaleString()} ₽</span>
+              <h3 class="ad-title">${escapeHtml(item.title)}</h3>
+              <p class="ad-desc">${escapeHtml(item.description)}</p>
+              <div class="card-footer">
+                <span>#${item.id}</span>
+                <span style="color: var(--pink-glow);">ACTIVE</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // Отправка формы (POST)
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'ОТПРАВКА...';
+      statusMsg.textContent = '';
+
+      try {
+        const formData = new FormData();
+        formData.append('title', document.getElementById('title').value.trim());
+        formData.append('description', document.getElementById('description').value.trim());
+        formData.append('price', parseFloat(document.getElementById('price').value));
+
+        if (imageInput.files.length > 0) {
+          formData.append('image', imageInput.files[0]);
+        }
+
+        const response = await fetch(ADS_URL, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error(`Ошибка ${response.status}`);
+
+        form.reset();
+        fileText.textContent = '+ Выбрать файл';
+        previewContainer.style.display = 'none';
+
+        statusMsg.style.color = 'var(--pink-glow)';
+        statusMsg.textContent = 'ЛОТ УСПЕШНО ОПУБЛИКОВАН';
+
+        await loadAds();
+      } catch (err) {
+        statusMsg.style.color = 'var(--crimson)';
+        statusMsg.textContent = `СБОЙ: ${err.message}`;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ОПУБЛИКОВАТЬ';
+      }
+    });
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    loadAds();
+  </script>
+</body>
+</html>
